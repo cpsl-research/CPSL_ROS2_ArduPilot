@@ -12,3 +12,11 @@ mavros:
       - imu
       - local_position
       - global_position
+      # Browser/API flight controls: arm, takeoff/land, mode changes.
+      - command
+      # Console publishes forward velocity and yaw-rate setpoints here:
+      # /mavros/setpoint_velocity/cmd_vel_unstamped
+      - setpoint_velocity
+      # Console mission upload/start and FC-enforced permitted-area polygons.
+      - waypoint
+      - geofence
