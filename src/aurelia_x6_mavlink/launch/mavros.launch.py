@@ -1,7 +1,9 @@
 from ament_index_python.packages import get_package_share_directory
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, EmitEvent, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
+from launch.events import Shutdown
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.descriptions import ParameterFile
@@ -34,7 +36,6 @@ def generate_launch_description():
     mavros_node = Node(
         package='mavros',
         executable='mavros_node',
-        name='mavros',
         output='screen',
         parameters=[
             mavros_params,
@@ -43,5 +44,11 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription(ARGUMENTS)
+    # The executable creates router, UAS and plugin nodes with their own names.
+    # A global __node remap renames all of them and breaks private endpoints.
+    ld.add_action(RegisterEventHandler(OnProcessExit(
+        target_action=mavros_node,
+        on_exit=[EmitEvent(event=Shutdown(reason='MAVROS process exited'))],
+    )))
     ld.add_action(mavros_node)
     return ld
